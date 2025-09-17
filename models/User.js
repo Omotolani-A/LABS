@@ -13,6 +13,7 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
       lowercase: true,
+      match: [/^\S+@\S+\.\S+$/, "Please provide a valid email address"],
     },
     password: {
       type: String,
@@ -32,6 +33,7 @@ const userSchema = new mongoose.Schema(
     },
     phone: {
       type: String,
+      match: [/^\+?[0-9]{7,15}$/, "Please provide a valid phone number"],
     },
   },
   { timestamps: true }
@@ -48,6 +50,13 @@ userSchema.pre("save", async function (next) {
 //  Compare entered password with hashed password
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
+};
+
+// Remove sensitive fields when converting to JSON
+userSchema.methods.toJSON = function () {
+  const obj = this.toObject();
+  delete obj.password; // remove password field
+  return obj;
 };
 
 const User = mongoose.model("User", userSchema);
