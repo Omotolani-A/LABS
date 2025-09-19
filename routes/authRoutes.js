@@ -12,4 +12,9 @@ router.post("/login", loginUser);
 // Private route (requires JWT)
 router.get("/profile", protect, getUserProfile);
 
+router.get("/test", (req, res) => {
+  res.send("Auth route works!");
+});
+
+
 export default router;
