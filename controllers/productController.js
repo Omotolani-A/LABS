@@ -1,5 +1,5 @@
 // controllers/productController.js
-import Product from "../models/Product.js";
+import Product from "../models/product.js";
 
 // @desc    Create new product (Admin)
 // @route   POST /api/products
