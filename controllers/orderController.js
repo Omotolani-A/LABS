@@ -1,5 +1,5 @@
 // controllers/orderController.js
-import Order from "../models/order.js";
+import Order from "../models/Order.js";
 import DeliveryZone from "../models/DeliveryZone.js";
 
 // @desc    Create new order
@@ -7,17 +7,17 @@ import DeliveryZone from "../models/DeliveryZone.js";
 // @access  Private
 export const createOrder = async (req, res) => {
   try {
-    const { orderItems, shippingAddress } = req.body;
+    const { items, shippingAddress, deliveryZone } = req.body;
 
-    if (!orderItems || orderItems.length === 0) {
+    if (!items || items.length === 0) {
       return res.status(400).json({ message: "No order items" });
     }
 
     // 1. Calculate subtotal
-    const totalPrice = orderItems.reduce((acc, item) => acc + item.price * item.qty, 0);
+    const totalPrice = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
     // 2. Find zone fee
-    const zone = await DeliveryZone.findById(shippingAddress.zone);
+    const zone = await DeliveryZone.findById(deliveryZone);
     if (!zone) {
       return res.status(400).json({ message: "Invalid delivery zone" });
     }
@@ -30,8 +30,9 @@ export const createOrder = async (req, res) => {
     // 4. Create order
     const order = new Order({
       user: req.user._id,
-      orderItems,
+      items,
       shippingAddress,
+      deliveryZone,
       shippingFee,
       totalPrice,
       finalAmount,
@@ -49,7 +50,9 @@ export const createOrder = async (req, res) => {
 // @access  Private
 export const getMyOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user._id }).populate("orderItems.product");
+    const orders = await Order.find({ user: req.user._id })
+      .populate("items.product")
+      .populate("deliveryZone");
     res.json(orders);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -63,10 +66,16 @@ export const getOrderById = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
       .populate("user", "name email")
-      .populate("orderItems.product")
-      .populate("shippingAddress.zone");
+      .populate("items.product")
+      .populate("deliveryZone");
 
     if (!order) return res.status(404).json({ message: "Order not found" });
+    res.json(order);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // @desc    Get all orders (Admin only)
 // @route   GET /api/orders
 // @access  Private/Admin
@@ -74,8 +83,8 @@ export const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find()
       .populate("user", "name email")
-      .populate("orderItems.product")
-      .populate("shippingAddress.zone");
+      .populate("items.product")
+      .populate("deliveryZone");
     res.json(orders);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -96,12 +105,6 @@ export const updateOrderStatus = async (req, res) => {
     await order.save();
 
     res.json({ message: "Order status updated", order });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-    res.json(order);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
