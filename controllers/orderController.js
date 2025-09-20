@@ -67,6 +67,39 @@ export const getOrderById = async (req, res) => {
       .populate("shippingAddress.zone");
 
     if (!order) return res.status(404).json({ message: "Order not found" });
+// @desc    Get all orders (Admin only)
+// @route   GET /api/orders
+// @access  Private/Admin
+export const getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .populate("user", "name email")
+      .populate("orderItems.product")
+      .populate("shippingAddress.zone");
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Update order status (Admin only)
+// @route   PUT /api/orders/:id/status
+// @access  Private/Admin
+export const updateOrderStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const order = await Order.findById(req.params.id);
+
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    order.status = status || order.status;
+    await order.save();
+
+    res.json({ message: "Order status updated", order });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
     res.json(order);
   } catch (error) {
