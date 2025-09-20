@@ -1,4 +1,4 @@
-// models/Order.js
+// models/order.js
 import mongoose from "mongoose";
 
 const orderSchema = new mongoose.Schema(
@@ -12,15 +12,16 @@ const orderSchema = new mongoose.Schema(
     items: [
       {
         product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
-        name: { type: String, required: true }, // product name 
+        name: { type: String, required: true },
         quantity: { type: Number, required: true },
         price: { type: Number, required: true }, // unit price
       },
     ],
 
     shippingAddress: {
-      type: String,
-      required: true,
+      street: { type: String, required: true },
+      city: { type: String, required: true },
+      landmark: { type: String }, // optional
     },
 
     deliveryZone: {
