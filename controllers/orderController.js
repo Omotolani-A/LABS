@@ -1,5 +1,5 @@
 // controllers/orderController.js
-import Order from "../models/Order.js";
+import Order from "../models/order.js";
 import DeliveryZone from "../models/DeliveryZone.js";
 
 // @desc    Create new order
